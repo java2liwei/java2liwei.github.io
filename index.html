@@ -79,7 +79,7 @@
 						<li>Links</li>
 						
 						
-						<li>Über</li>
+						<li>About</li>
 						
 					</ul>
 				</div>
@@ -116,7 +116,7 @@
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						<a href="/tags/Android-ClassLoader/" style="font-size: 10px;">Android,  ClassLoader</a>
+						
 					</div>
 				</section>
 				
@@ -202,11 +202,11 @@
 
       <div class="body-wrap">
   
-    <article id="post-Android-动态加载ClassLoader" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-proxymodel" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/07/23/Android-动态加载ClassLoader/" class="article-date">
-  	<time datetime="2016-07-23T10:22:38.000Z" itemprop="datePublished">2016-07-23</time>
+      <a href="/2016/07/31/proxymodel/" class="article-date">
+  	<time datetime="2016-07-30T16:25:45.000Z" itemprop="datePublished">2016-07-31</time>
 </a>
     </div>
   
@@ -215,75 +215,28 @@
       <input type="hidden" class="isFancy" />
     
     
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/23/Android-动态加载ClassLoader/">Android 动态加载ClassLoader</a>
-    </h1>
-  
-
-      </header>
-      
-    
     <div class="article-entry" itemprop="articleBody">
       
-        <blockquote>
-<ul>
-<li>ClassLoader 使用背景</li>
-<li>DexClassLoader 和 PathClassLoader</li>
-<li>ClassLoader使用实例</li>
-<li>ClassLoader 加载类过程</li>
-</ul>
-</blockquote>
-<hr>
-<p>ClassLoader 使用背景</p>
-<hr>
-<p>&emsp;&emsp;classloader  主要用于动态加载jar/dex/apk，通过动态加载的方式，能够将一些逻辑移出生成jar包动态加载，可以有效降低apk的大小，提高补丁到达率。</p>
-<p>&emsp;&emsp;下面看下android中使用ClassLoader的场景。先看下我们程序启动后会有 几个ClassLoader<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate();</div><div class="line">    ClassLoader classLoader = getClassLoader();</div><div class="line">    Log.d(<span class="string">"classLoader"</span>, <span class="string">"classLoader------&gt;"</span> + classLoader);</div><div class="line">    <span class="keyword">if</span> (classLoader.getParent() != <span class="keyword">null</span>) &#123;</div><div class="line">       Log.d(<span class="string">"classLoader"</span>,<span class="string">"parentClassLoader------&gt;"</span>+classLoader.getParent());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>上面的代码首先会获取我们应用程序使用的默认的ClassLoader，然后在获取我们默认ClassLoader的父ClassLoader，我们先看打印再解释一下这2个ClassLoader</p>
-<blockquote>
-<p>classLoader——&gt;dalvik.system.PathClassLoader[DexPathList[[zip file “/data /app/com.example.liwei.dynamic-2/base.apk”],nativeLibraryDirectories=[/data/app/com.example.liwei.dynamic-2/lib/arm64, /vendor/lib64, /system/lib64]]]<br>parentClassLoader——&gt;com.android.tools.fd.runtime.IncrementalClassLoader@8f59116</p>
-</blockquote>
-<p>从上面打印的日志可以看出classLoader是我们应用程序在用的类加载器，而ParentClassLoader其实是我们应用程序在启动的时候生成的，主要用于加载系统Framework层的库。</p>
-<p>DexClassLoader 和 PathClassLoader</p>
-<hr>
-<p>&emsp;&emsp;Android 中主要使用ClassLoader的子类DexClassLoader 和  PathClassLoader，这2种ClassLoader的使用场景是不一样的，</p>
+        <p>###代理模式</p>
 <blockquote>
 <ul>
-<li>DexClassLoader 主要用于动态加载磁盘上jar/dex/apk</li>
-<li>PathClassLoader主要用于加载已经安装的Apk</li>
+<li>定义</li>
+<li>结构</li>
+<li>实例</li>
+<li>总结</li>
 </ul>
 </blockquote>
-<p>DexClassLoader 的初始化方法</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DexClassLoader</span> <span class="keyword">extends</span> <span class="title">BaseDexClassLoader</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DexClassLoader</span><span class="params">(String dexPath, String optimizedDirectory, String 			libraryPath, ClassLoader parent)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>((String)<span class="keyword">null</span>, (File)<span class="keyword">null</span>, (String)<span class="keyword">null</span>, (ClassLoader)<span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>PathClassLoader的初始化方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PathClassLoader</span> <span class="keyword">extends</span> <span class="title">BaseDexClassLoader</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PathClassLoader</span><span class="params">(String dexPath, ClassLoader parent)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>((String)<span class="keyword">null</span>, (File)<span class="keyword">null</span>, (String)<span class="keyword">null</span>, (ClassLoader)<span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PathClassLoader</span><span class="params">(String dexPath, String libraryPath, 		       ClassLoader parent)</span></span>&#123;</div><div class="line">        <span class="keyword">super</span>((String)<span class="keyword">null</span>, (File)<span class="keyword">null</span>, (String)<span class="keyword">null</span>, (ClassLoader)<span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>以上2个ClassLoader的初始化都很简单，主要的区别是DexClassLoader会传入一个optimizedDirectory的参数，继续看下BaseDexClassLoader中的初始化。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">BaseDexClassLoader</span><span class="params">(String dexPath, File optimizedDirectory, </span></span></div><div class="line">	String libraryPath, ClassLoader parent) &#123;</div><div class="line">        <span class="keyword">super</span>(parent);</div><div class="line">        <span class="keyword">this</span>.pathList = <span class="keyword">new</span> DexPathList(<span class="keyword">this</span>, dexPath, libraryPath,    optimizedDirectory);</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
-<p>继续看下DexPathList的构造函数<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">DexPathList</span><span class="params">(ClassLoader definingContext, String dexPath, </span></span></div><div class="line">	String libraryPath, File optimizedDirectory) &#123;</div><div class="line">        <span class="keyword">if</span>(definingContext == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"definingContext == null"</span>);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(dexPath == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"dexPath == null"</span>);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">if</span>(optimizedDirectory != <span class="keyword">null</span>) &#123;</div><div class="line">                <span class="keyword">if</span>(!optimizedDirectory.exists()) &#123;</div><div class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"optimizedDirectory doesn\'t exist: "</span> + optimizedDirectory);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="keyword">if</span>(!optimizedDirectory.canRead() || !optimizedDirectory.canWrite()) &#123;</div><div class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"optimizedDirectory not readable/writable: "</span> + optimizedDirectory);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">this</span>.definingContext = definingContext;</div><div class="line">            ArrayList suppressedExceptions = <span class="keyword">new</span> ArrayList();</div><div class="line">            <span class="keyword">this</span>.dexElements = makeDexElements(splitDexPath(dexPath), optimizedDirectory, suppressedExceptions);</div><div class="line">            <span class="keyword">if</span>(suppressedExceptions.size() &gt; <span class="number">0</span>) &#123;</div><div class="line">                <span class="keyword">this</span>.dexElementsSuppressedExceptions = (IOException[])suppressedExceptions.toArray(<span class="keyword">new</span> IOException[suppressedExceptions.size()]);</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="keyword">this</span>.dexElementsSuppressedExceptions = <span class="keyword">null</span>;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">this</span>.nativeLibraryDirectories = splitLibraryPath(libraryPath);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> DexFile <span class="title">loadDexFile</span><span class="params">(File file, File optimizedDirectory)</span> </span></div><div class="line">	<span class="keyword">throws</span> IOException &#123;</div><div class="line">        <span class="keyword">if</span>(optimizedDirectory == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> DexFile(file);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            String optimizedPath = optimizedPathFor(file, optimizedDirectory);</div><div class="line">            <span class="keyword">return</span> DexFile.loadDex(file.getPath(), optimizedPath, <span class="number">0</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<p>看到以上的loadDexFile知道了如果optimizedDirectory为空，那么我们就用应用默认的dexFile，这也是上面说的load已经安装的Apk的dex，如果optimizedDirectory不为空，那么就load外面的jar/dex/apk，所以可以得出结论：</p>
-<blockquote>
-<ul>
-<li>DexClassLoader 加载外部的jar/dex/apk</li>
-<li>PathClassLoader 加载已经安装的apk</li>
-</ul>
-</blockquote>
-<p>ClassLoader使用实例</p>
-<hr>
-<p>&emsp;&emsp;上面我们介绍了Android的ClassLoader，现在使用案例来说一下ClassLoader的常用使用场景。<br>首先我们创建一个需要动态加载的jar工程，这个工程很简单，只有2个类<br>向外提供的接口<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IDynamic</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setContext</span><span class="params">(Context context)</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">showToast</span><span class="params">(String text)</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>具体实现类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dynamic</span> <span class="keyword">implements</span> <span class="title">IDynamic</span></span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Context mContext;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContext</span><span class="params">(Context context)</span> </span>&#123;</div><div class="line">        mContext = context;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showToast</span><span class="params">(String text)</span> </span>&#123;</div><div class="line">        Toast.makeText(mContext, text, Toast.LENGTH_LONG).show();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>我们将上面的工程编出一个jar包，再用dx处理一下</p>
-<blockquote>
-<ul>
-<li>dx –dex –output=test.jar dynamic.jar</li>
-</ul>
-</blockquote>
-<p>接下来就是我们用来动态load这jar的工程<br>首先copy这个jar到内部存储里面<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">copyDynamicJar</span><span class="params">()</span></span>&#123;</div><div class="line">        InputStream ins = <span class="keyword">null</span>;</div><div class="line">        OutputStream ous  = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            String dynampicJarPath = getDynamicJarPath();</div><div class="line">            ins = getAssets().open(<span class="string">"dynamic.jar"</span>);</div><div class="line">            ous = <span class="keyword">new</span> FileOutputStream(<span class="keyword">new</span> File(dynampicJarPath));</div><div class="line"></div><div class="line">            <span class="keyword">int</span> len = <span class="number">0</span>;</div><div class="line">            <span class="keyword">byte</span> [] data = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</div><div class="line">            <span class="keyword">while</span> ((len = ins.read(data)) &gt; <span class="number">0</span>) &#123;</div><div class="line">                ous.write(data, <span class="number">0</span>, len);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;<span class="keyword">finally</span> &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                <span class="keyword">if</span> (ins != <span class="keyword">null</span>) &#123;</div><div class="line">                    ins.close();</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (ous != <span class="keyword">null</span>)&#123;</div><div class="line">                    ous.close();</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
-<p>然后就利用DexClassloder去加载这个jar<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mDexclassLoader = <span class="keyword">new</span> DexClassLoader(getDynamicJarPath(),</div><div class="line">               mContext.getDir(<span class="string">"odex"</span>, MODE_PRIVATE).getAbsolutePath(), <span class="keyword">null</span>, mContext.getClassLoder()）;</div></pre></td></tr></table></figure></p>
-<p>最后释放出对外提供的接口,并使用其中的方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">try</span> &#123;</div><div class="line">	Class&lt;?&gt; cl = mDexclassLoader.loadClass(DYNAMIC_NAME);</div><div class="line">    IDynamic dynamic  = (IDynamic) cl.newInstance();</div><div class="line">    dynamic.setContext(mContext);</div><div class="line">    dynamic.showToast(<span class="string">"调用动态加载的jar中的方法"</span>);</div><div class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">    e.printStackTrace();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>其中要注意的点：接口的路径一定要是jar中的接口对应，IDynamic。</p>
-<p>ClassLoader 加载类过程</p>
-<hr>
+<p>一.  定义</p>
+<p>  代理模式就是将要实现的行为委托给领一个对象完成。</p>
+<p>二. 结构</p>
+<p>  先看下类图：</p>
+<p>  <img src="http://thumbnail0.baidupcs.com/thumbnail/a36d37ad3f8dab0c13bd4855207acf08?fid=3324486438-250528-1013084183251534&amp;time=1469890800&amp;rt=sh&amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-zP%2BjoqPxvYibpw3pO%2BOQ4jm1VAs%3D&amp;expires=8h&amp;chkv=0&amp;chkbd=0&amp;chkpc=&amp;dp-logid=4916483496758421856&amp;dp-callid=0&amp;size=c710_u400&amp;quality=100" alt="代理模式类图"></p>
+<p>1.IProxy：需要通过代理的接口，定义了需要代理的方法。</p>
+<p>2.RealSubject：被代理的对象，需要实现已经定义好的需要代理的接口，并实现定义的代理的方法。</p>
+<p>3.ProxySubject：代理的对象，也需要实现代理接口，但是不需要实现代理的方法，所有代理方法的实现全部交给传进来的被代理的对象实现。</p>
+<p>三. 实例</p>
+<p>四.总结</p>
+<p>​    通过代理我们可以将某一类行为以更合理的方式去完成，例如提供sdk或者jar包的时候，我们通过代理可以将一个代理类释放出来,把真正的逻辑封装起来。</p>
 
       
     </div>
@@ -291,10 +244,6 @@
     <div class="article-info article-info-index">
       
       
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-ClassLoader/">Android,  ClassLoader</a></li></ul>
-	</div>
-
       
 
       
